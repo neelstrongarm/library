@@ -25,21 +25,30 @@
                 <li class="nav-item">
                     <a class="nav-link" href="#">Contact Us</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/books">Books</a>
+                </li>
             </ul>
         </div>
     </nav>
-    <form>
-    	<div class="form-group">
-		<h3>Email address</h3>
-		<input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
-		<small id="emailHelp" class="form-text text-muted">We won't share your email with anyone else.</small>
-		</div>
-		<div class="form-group">
-			   	<label for="exampleInputPassword1">Password</label>
-			   	<input type="password" class="form-control" id="exampleInputPassword1">
-		</div>
-		<button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+    <div class="container">
+        <form action="/login" method="post">
+            <h1>LOG IN</h1>
+            <div class="form-group user">
+            <h3>Email address</h3>
+            <!-- Try changin type to email -->
+            <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" name="username" required>
+            <small id="emailHelp" class="form-text text-muted">We won't share your email with anyone else.</small>
+            </div>
+            <div class="form-group user">
+                       <label for="exampleInputPassword1">Password</label>
+                       <input type="password" class="form-control" id="exampleInputPassword1" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+
+    </div>
+    
     
 
 
