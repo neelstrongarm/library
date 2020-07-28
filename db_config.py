@@ -17,6 +17,8 @@ class dbMysql():
             database=self.database
         )
         return(self.mydb)
+        
+        # whatever
 
     def configure_db(self, mycursor):
         mycursor.execute("CREATE DATABASE IF NOT EXISTS library")
