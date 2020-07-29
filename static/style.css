@@ -111,3 +111,10 @@ body {
     color:white;
     font-size: larger;
 }
+
+.heading {
+    font-size: 1in;
+    font-family: nunito;
+    font-weight: 800;
+    text-align: center;
+}
