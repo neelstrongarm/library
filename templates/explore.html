@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>	LIBRARY</title>
+    <title>Explore</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="static/styles.css">
 </head>
 <body>
 	<nav class="navbar navbar-expand-lg navbar-light bg">
-        <a class="navbar-brand" href="#">LIBRARY</a>
+        <a class="navbar-brand" href="/"><b>LIBRARY</b></a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
    			<span class="navbar-toggler-icon"></span>
    		</button>
@@ -21,9 +22,6 @@
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="#">About</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Contact Us</a>
                 </li>
                 <li class="nav-item active">
                     <a class="nav-link" href="/explore">Explore</a>
@@ -45,9 +43,15 @@
                         <form action = '/borrow' method = "post" style="float: left;">
                             <button type="submit" class="btn button1" name = "selected" value = "{{ books[i] }}">BORROW</button>
                         </form>
-                        <form style="float: right;">
-                            <button class="btn button2 fa fa-heart-o"></button>
+                        {% if books[i] in read_list %}
+                        <form style="float: right;" action = '/readlist_add' method = "post">
+                            <button type="submit" class="btn button2 fa fa-heart" name = "read_selected" value = "{{ books[i] }}"></button>
                         </form>
+                        {% else %}
+                        <form style="float: right;" action = '/readlist_add' method = "post">
+                            <button type="submit" class="btn button2 fa fa-heart-o" name = "read_selected" value = "{{ books[i] }}"></button>
+                        </form>
+                        {% endif %}
                     </div>   
                 </div>
             </div>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Borrow</title>
+  <title>LIBRARY</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
   <link rel="stylesheet" href="path/to/font-awesome/css/font-awesome.min.css">
@@ -21,14 +21,14 @@
                   <a class="nav-link" href="/homepage">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">About</a>
+                  <a class="nav-link" href="/about">About</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="/explore">Explore</a>
               </li>
             </ul>
         </div>
-  </nav>
+    </nav>
 
     <div class="container">
       <div class="row">
@@ -44,16 +44,15 @@
               <h6>The fee is <b>10 coins</b> for the first week, and <b>2 coins</b> per day after that.</h6>
               <br>
               <h6>Note: <b>200 coins</b> will be deducted from you account as collateral</h6>
-              <form action = '/buy' method = "post">
+              <form action = '/sell' method = "post">
                 <br>
                 <br>
-                <button type="submit" class="btn button2" name = "selected" value = "{{ book['name'] }}">BORROW</button>
+                <button type="submit" class="btn button2" name = "selected" value = "{{ book['name'] }}">RETURN</button>
               </form>
-			    </div>
+          </div>
+			  </div>
       </div>
     </div>
-
-    			
 
 	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>

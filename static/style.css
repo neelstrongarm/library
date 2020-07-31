@@ -88,14 +88,23 @@ body {
 }
 
 .centre {
-    padding:100px;
-    padding-left: 350px;
+    padding-top: 100px;
+    padding-left: 20%;
+    padding-right: 20%;
+    color:black;
 }
 
 .header {
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
+    height: 950px;
+}
+.header1 {
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    height: 700px;
 }
 
 .register{
@@ -107,14 +116,39 @@ body {
     font-weight: 800;
 }
 
-.icon {
+/* .icon {
     color:white;
     font-size: larger;
-}
+} */
 
 .heading {
     font-size: 1in;
     font-family: nunito;
     font-weight: 800;
     text-align: center;
+} 		
+
+.albus {
+    float: center;
+    text-align: center;
+}
+
+.apology {
+    float: right;
+    margin-top: 250px;
+    margin-right: 250px;
+    padding-left:20px;
+    padding-right: 20px;
+    padding: 10px;
+}
+
+.apology1 {
+    color:rgb(38, 179, 132);
+    font-size: 0.5in;
+    text-align:center;
+}
+
+.table {
+    font-size: 0.5cm;
+    color:aquamarine;
 }
