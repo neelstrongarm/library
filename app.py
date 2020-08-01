@@ -13,6 +13,7 @@ from functools import wraps
 import time
 import datetime
 
+
 # Setup for database
 db = dbMysql()
 mydb = db.connection()
@@ -20,13 +21,14 @@ mycursor = mydb.cursor(buffered=True)
 db.configure_db(mycursor)
 
 
-# Just to show adithya how easy it is to upload files to github
+user = {"id": None, "name": None, "balance": None}
 
-user = {"id": None, "name": None}
 
 app = Flask(__name__)
 
+
 app.config["TEMPLATES_AUTO_RELOAD"] = True
+
 
 # Ensure responses aren't cached
 @app.after_request
@@ -42,17 +44,20 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
+
 def login_required(f):
     """
     Decorate routes to require login.
     http://flask.pocoo.org/docs/1.0/patterns/viewdecorators/
     """
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get("user_id") is None:
             return redirect("/login")
         return f(*args, **kwargs)
     return decorated_function
+
 
 def apology(message):
         """ 
@@ -61,6 +66,7 @@ def apology(message):
 
         return render_template("apology.html", bottom=message)
 
+
 @app.route("/")
 def index():
         """ 
@@ -68,6 +74,7 @@ def index():
         """
 
         return render_template("index.html")
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -179,6 +186,7 @@ def register():
         else:
                 return render_template("signUp.html")
 
+
 @app.route("/homepage")
 @login_required
 def homepage():
@@ -204,14 +212,17 @@ def homepage():
 
         mycursor.execute("SELECT name, money FROM users WHERE user_id = (%s)", (user["id"],))
         sql_ret = mycursor.fetchone()
+        user["balance"] = sql_ret[1]
 
         if len(titles) == 0:
-                return render_template("def_homepage.html", balance = sql_ret[1], name = sql_ret[0])
-        try: 
+                return render_template("def_homepage.html", balance = user["balance"], name = sql_ret[0].title())
+
+        try:
                 titles.pop('ui')
         except KeyError:
                 pass
-        return render_template("homepage.html", books = titles, balance = sql_ret[1], name = sql_ret[0])
+
+        return render_template("homepage.html", books = titles, balance = user["balance"], name = sql_ret[0].title())
 
 
 @app.route("/pages", methods=["GET", "POST"])
@@ -233,6 +244,7 @@ def pages():
                 if (selected + str(i) + '.jpg') not in x:
                         break
         return render_template("pages.html", out = out, len = len(out))
+
 
 @app.route("/explore")
 def explore():
@@ -267,13 +279,11 @@ def explore():
                 val = (i[0].split('_'))
                 tmp = (''.join(list(zip(*val))[0]))
                 titles[tmp] = ' '.join(val).title()
-        fin = {}
-        i = 0
-        for j in titles:
-                if i == 0:
-                        i += 1
-                        continue
-                fin[j] = titles[j]
+
+        try:
+                titles.pop('ui')
+        except KeyError:
+                pass
 
         # Create a list of books that the user has added to readlist
         
@@ -284,7 +294,7 @@ def explore():
         for i in read_list_raw:
                 read_list.append(i[0])
 
-        return render_template("explore.html", books = fin, read_list = read_list)
+        return render_template("explore.html", books = titles, read_list = read_list)
 
 
 @app.route("/logout")
@@ -297,10 +307,11 @@ def logout():
     # Forget any user_id
     global user
     session.clear()
-    user = {"id": None, "name": None}
+    user = {"id": None, "name": None, "balance": None}
 
     # Redirect user to login form
     return redirect('/')
+
 
 @app.route("/borrow", methods=["GET", "POST"])
 @login_required
@@ -358,18 +369,24 @@ def buy():
 
         return redirect('/homepage')
 
+
 @app.route("/returnBook", methods=["GET", "POST"])
 @login_required
 def returnBook():
     """ 
     Displaying the contents of the book. 
     """
+
     selected = request.form["ret_selected"].split()
     code = ''.join(list(zip(*selected))[0]).lower() 
     book = {"code": code, "name": ' '.join(selected)}
-    return render_template("returnBook.html", book = book)
 
+    full_book_name = ('_'.join(selected)).lower()
 
+    fee, cur_time_raw, borrowed_time_raw, new_bal = calc_fee(full_book_name)
+
+#     You borrowed this book on {{borrowed_date}} so far the fee is: {{fee}}
+    return render_template("returnBook.html", book = book, borrowed_date = borrowed_time_raw[-1][-1], fee = fee)
 
 
 @app.route("/about")
@@ -379,6 +396,7 @@ def contact():
         """
 
         return render_template("about.html")
+
 
 @app.route("/sell", methods=["GET", "POST"])
 @login_required
@@ -391,41 +409,8 @@ def sell():
                 selected = request.form["selected"]
                 book = '_'.join(selected.lower().split())
                 
-                # Get the current time
-                ts = time.time()
+                fee, cur_time_raw, borrowed_time_raw, new_bal = calc_fee(book)
 
-                # raw time is in the format YYYY/MM/DD HH:MM:SS
-                cur_time_raw = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-
-                # Taking the borrowed time from database
-                mycursor.execute(f"SELECT borrowed FROM library.register WHERE user_id = {user['id']} AND book_name = (%s)", (book,))
-                borrowed_time_raw = mycursor.fetchall()
-                
-                # Formatted time is in the format YYYY/MM/DD in the form of string
-                cur_time_formatted = (str(cur_time_raw)).split()[0]
-                borrowed_time_formatted = (str(borrowed_time_raw[-1][-1])).split()[0]
-                
-                # Converting string form to list form
-                cur_time_fin = list(map(int, cur_time_formatted.split('-')))   
-                borrowed_time_fin = list(map(int, borrowed_time_formatted.split('-')))
-
-                # Number of days between the two given dates
-                d0 = datetime.date(cur_time_fin[0], cur_time_fin[1], cur_time_fin[2])
-                d1 = datetime.date(borrowed_time_fin[0], borrowed_time_fin[1], borrowed_time_fin[2])
-                delta = (d0 - d1).days
-
-                mycursor.execute("SELECT money FROM users WHERE user_id = (%s)", (user["id"],))
-                money = mycursor.fetchone()
-                old_bal = money[0] + 200
-
-                new_bal = old_bal - 10
-
-                if delta > 7:
-                        while delta != 7:
-                                delta -= 1
-                                new_bal -= 2
-
-                fee = abs(new_bal - old_bal)
                 # Database start
 
                 # Update the books table to show that the current user has made the transaction
@@ -452,6 +437,9 @@ def sell():
 @app.route("/transactions", methods=["GET", "POST"])
 @login_required
 def transactions():
+        """
+        Shows the user, all the transaction they have made so far
+        """
 
         ts = time.time()
         cur_time_raw = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
@@ -503,21 +491,31 @@ def transactions():
                 i.append(fee)
 
         if len(tran) == 0:
-                return render_template("def_transactions.html")
+                return render_template("def_transactions.html", name = user["name"].title(), balance = 1000)
         return render_template("transactions.html", transactions = tran)
+
 
 @app.route("/readlist_add", methods=["GET", "POST"])
 @login_required
 def readlist_add():
+        """
+        Adding a book to readlist table, or removing it if it already exists
+        """
+
         selected = request.form["read_selected"]
 
         add_remove(selected)
 
         return redirect('/explore')
 
+
 @app.route("/readlist", methods=["GET", "POST"])
 @login_required
 def readlist():
+        """
+        To display the readlist template
+        """
+
         if request.method == "GET":
                 mycursor.execute("SELECT book_name FROM readlist WHERE user_id = (%s)", (user["id"],))
                 books_raw = list(mycursor.fetchall())
@@ -528,7 +526,9 @@ def readlist():
                         tmp = (''.join(list(zip(*val))[0]))
                         titles[tmp.lower()] = ' '.join(val).title()
 
-                return render_template("readlist.html", books = titles)
+                if len(titles) == 0:
+                        return render_template("def_readlist.html", name = user["name"].title(), balance = user["balance"])
+                return render_template("readlist.html", books = titles, name = user["name"].title(), balance = user["balance"])
         else:
                 selected = request.form["read_selected"]
 
@@ -536,7 +536,12 @@ def readlist():
 
                 return redirect("/readlist")
 
+
 def add_remove(selected):
+        """
+        A function that checks wheter the given book is already in the readlist table, if it is, then it removes it, otherwise it adds it.
+        """
+
         mycursor.execute("SELECT book_name FROM readlist WHERE user_id = (%s)", (user["id"],))
         books_raw = mycursor.fetchall()
 
@@ -551,3 +556,46 @@ def add_remove(selected):
         else:
                 mycursor.execute("DELETE FROM readlist WHERE book_name = (%s) AND user_id = (%s)", (selected, user["id"]))
                 mydb.commit()
+
+
+def calc_fee(book):
+        # Get the current time
+        ts = time.time()
+
+        # raw time is in the format YYYY/MM/DD HH:MM:SS
+        cur_time_raw = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+
+        # Taking the borrowed time from database
+        mycursor.execute(f"SELECT borrowed FROM library.register WHERE user_id = {user['id']} AND book_name = (%s)", (book,))
+        borrowed_time_raw = mycursor.fetchall()
+        
+        # Formatted time is in the format YYYY/MM/DD in the form of string
+        cur_time_formatted = (str(cur_time_raw)).split()[0]
+        borrowed_time_formatted = (str(borrowed_time_raw[-1][-1])).split()[0]
+        
+        # Converting string form to list form
+        cur_time_fin = list(map(int, cur_time_formatted.split('-')))   
+        borrowed_time_fin = list(map(int, borrowed_time_formatted.split('-')))
+
+        # Number of days between the two given dates
+        d0 = datetime.date(cur_time_fin[0], cur_time_fin[1], cur_time_fin[2])
+        d1 = datetime.date(borrowed_time_fin[0], borrowed_time_fin[1], borrowed_time_fin[2])
+        delta = (d0 - d1).days
+
+        mycursor.execute("SELECT money FROM users WHERE user_id = (%s)", (user["id"],))
+        money = mycursor.fetchone()
+        old_bal = money[0] + 200
+
+        new_bal = old_bal - 10
+
+        if delta > 7:
+                while delta != 7:
+                        delta -= 1
+                        new_bal -= 2
+
+        fee = abs(new_bal - old_bal)
+
+        if fee > 200:
+                fee = 200
+
+        return (fee, cur_time_raw, borrowed_time_raw, new_bal)
